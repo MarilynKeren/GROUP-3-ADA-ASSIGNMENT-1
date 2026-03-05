@@ -1,3 +1,51 @@
+/*Original code with the leak fixed
+#include <Arduino.h>
+
+struct SensorData {
+  float temperature;
+  float humidity;
+  int light;
+};
+
+// Step 1: Identify and fix the memory leak in this function.
+// Note: In Step 1, we still return a pointer, but we must ensure it is managed later. [cite: 207, 210]
+SensorData* readSensors() {
+  // Memory is allocated on the heap using 'new'. 
+  // This memory stays occupied until 'delete' is called. [cite: 208]
+  SensorData* data = new SensorData; 
+  data->temperature = random(200, 300) / 10.0;
+  data->humidity = random(300, 600) / 10.0;
+  data->light = random(0, 1024);
+  return data;
+}
+
+void setup() {
+  Serial.begin(115200);
+  while (!Serial);
+}
+
+void loop() {
+  // We receive a pointer to heap memory. [cite: 223, 245]
+  SensorData* sensor = readSensors();
+
+  Serial.print("Free Heap: ");
+  Serial.print(ESP.getFreeHeap()); // Monitoring this helps verify the fix. 
+  Serial.print(" | Temp: ");
+  Serial.print(sensor->temperature);
+  Serial.print(", Hum: ");
+  Serial.print(sensor->humidity);
+  Serial.print(", Light: ");
+  Serial.println(sensor->light);
+
+  
+  // After using the data, we must explicitly free the memory. 
+  // Without this line, the 'Free Heap' will decrease every second until crash. 
+  delete sensor; 
+  
+
+  delay(1000);
+}
+*/
 #include <Arduino.h>
 
 // ================= SENSOR DATA STRUCT =================
