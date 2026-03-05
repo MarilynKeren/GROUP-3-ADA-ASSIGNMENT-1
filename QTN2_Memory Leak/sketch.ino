@@ -89,10 +89,24 @@ void loop() {
 
   delay(1000); // simulate 1 second sampling
 }
-/*The program crashes because memory is allocated using new
-inside the loop but never freed. 
-This causes the free heap memory (ESP.getFreeHeap()) to decrease continuously. 
-The issue is fixed by adding delete sensor; after using the data. 
-However, using new and delete repeatedly is not ideal for embedded systems. 
-The best solution is to use a single stack-based SensorData variable instead of dynamic allocation.
+/*Analysis
+Problem: The original program crashes because readSensors() allocates memory using new in the loop but never releases it.
+
+Symptom: This creates a memory leak, causing ESP.getFreeHeap() to decrease until the ESP32 runs out of RAM.
+
+Primary Fix: The leak is stopped by adding delete sensor; after the data is used to free the heap memory.
+
+Design Flaw: Even when fixed, repeated new and delete operations are inappropriate for long-running embedded systems.
+
+Fragmentation: Constant allocation/deallocation creates "holes" in memory, known as heap fragmentation, which eventually causes system failure.
+
+Overhead: Searching the heap for free space adds CPU overhead and makes function execution time unpredictable (non-deterministic).
+
+Robust Solution: The best approach is using a single stack-based or global SensorData variable to avoid the heap entirely.
+
+Efficiency: By passing this variable by reference (&data), the program reuses the same memory address indefinitely.
+
+Stability: This "zero-allocation" strategy ensures 100% predictable memory usage and prevents fragmentation-related crashes.
+
+Conclusion: For microcontrollers, static allocation is safer and more performant than dynamic memory management.
 */
